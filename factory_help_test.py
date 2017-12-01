@@ -2,10 +2,53 @@
 
 # from pyquery import PyQuery as pq
 from lxml import etree
-import urllib2, re
+import urllib2, re, urllib
 import requests
-
+import cookielib
 url = 'http://www.zcf8.com/login'
+
+cookie = cookielib.CookieJar()
+opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
+opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36')]
+r = opener.open(url)
+page_code = r.read().decode('utf-8')
+print page_code
+print cookie
+
+pattern = re.compile('<div class="tu-yz posr">.*?<img src="(.*?)"', re.S)
+items = re.findall(pattern, page_code)
+print items
+# ----- 获取验证码: 先把验证码保存到本地，然后输入验证码进行操作
+# 验证码的处理#
+# 验证码生成页面的地址#
+im_url = items[0]
+#读取验证码图片#
+im_data = urllib2.urlopen(im_url).read()
+# 打开一个Code.PNG文件在D盘，没有的话自动生成#
+f=open('code.png','wb')
+# 写入图片内容#
+f.write(im_data)
+# 关闭文件#
+f.close()
+
+imgCode = raw_input('输入验证码：')
+
+payload = {
+    "phone_num": '15220874104',
+    'password': '1234567',
+    'imgcode': imgCode,
+    'login_mode':'1',
+    "_token":'nRgEpV3A4lQCD7Pb61ClxXiixsgvBjZZSAUb9vQw',
+}
+data = urllib.urlencode(payload)
+opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
+r = opener.open(url, data)
+print r.read().decode('utf-8')
+
+
+
+
+'''
 request = urllib2.Request(url)
 response = urllib2.urlopen(request)
 page_code = response.read().decode('utf8')
@@ -43,7 +86,7 @@ headers = {
     'Upgrade-Insecure-Requests': '1',
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
 
-    'X-XSRF-TOKEN': ,
+    # 'X-XSRF-TOKEN': ,
 }
 
 r = requests.post(url, params=payload, headers=headers)
@@ -53,3 +96,4 @@ print r.encoding
 print r.text
 
 # print response.statecode
+'''

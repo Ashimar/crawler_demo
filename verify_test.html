@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>验证码示例</title>
+</head>
+<body>
+  <form action="/login" method="post">
+    <input type="text" name="username" placeholder="用户名">
+    <input type="password" name="password" placeholder="密码">
+    <input type="hidden" name="captchaId" value="从易盾申请的captchaId">
+    <div id="captcha"></div> <!-- 验证码容器元素 -->
+    <button type="submit">登录</button>
+  </form>
+  <script src="//cstaticdun.126.net/load.min.js"></script> <!-- 初始化JS -->
+  <script>
+    initNECaptcha({
+      captchaId: '从易盾申请的captchaId',
+      element: '#captcha',
+      mode: 'float',
+      width: 320
+    }, function onload (instance) {
+      // 初始化成功后，用户输入对应用户名和密码，以及完成验证后，直接点击登录按钮即可
+    }, function onerror (err) {
+      // 验证码初始化失败处理逻辑，例如：提示用户点击按钮重新初始化
+    })
+  </script>
+</body>
+</html>
