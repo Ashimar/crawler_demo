@@ -11,9 +11,20 @@
 
 4.熟悉文件保存的过程
 
+淘宝的登录字段
+TPL_username
+TPL_password
+
+um_token:HV01PAAZ0b8d93f3790da4e75a1f5e6700441fec
+ua:099#KAFEtGEBEMdE6YTLEEEEE6twScREG6PFSuJFC6Vqgc978ffFSuBED6N1SciIV6QBSyR5V6NJZXCjVISiDy1KG6V3SXJ5C1qTETiL/9iDUxZVspJLgcBKC0Oivt+O8+qTETiL/9iDpqCVspJLgcBKC0Oivt+O8gdTEEi5DEEErGFEhrclHgohluZdsR9MZFStUXcfnM9SZy89ZRp66GFE1XZVR1QwluZuSLoTEEvP/DTj0llP/mkmE7EFsyaDdRdTEEx6zIywTGFETrZtt3illW4TEHITt3qEjrjopxA4D4AkWhErokQo1+RV0HUaBFt05c6ok8j2iHfkukj2qmA3kkkZy8m4mKjxxRzbokV/k0Pllkj2qDAp1ZWcqNGt060qm/N4kLgoO7FEpcZdtcRlluZVsyaa+3llsvnP/36alllzgcZddQlllu8Xsyaa+3llW0W/E7EhssaZtfxdJ7FE1cZdt054JNKXgGFEjPilEI/qaWw7zVZBNdZ6bteWNweGL5eDZ/e0Ps0twyJoPPqVNdZ6bteWNw5SaGZQSpw5cRNE99rqUt7BbQZ6btuAvshnwBS9E7EFD67EEp5TEEi5D7EE6GFE1XZlMZKRluZdwioTEEvPrpZ/t3lP/jFnE7EKsyOCdp9lsyVbrGFEwcZWAqBHTcZdsyXGbTdTEEi5DEEEIGFEHccdt3mFGsvbUXcFVovK8Pc9Zpr2IGFEHccdt3kgkyvbUXcFVovK8Pc9Zpr2
+
+使用的第三方 ：
+> pip install lxml
 """
 import urllib, urllib2, re, sys, os
 import tool
+from lxml import html
+import requests
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -24,25 +35,19 @@ class TaoBaoMM:
         self.tool = tool.Tool()
         self.url = "http://mm.taobao.com/json/request_top_list.htm" + "?page="
 
-    def set_proxy(self, request_url):
-        # proxy = urllib2.ProxyHandler({'http' : 'http://some-proxy.com:8080'})
-        # opener = urllib2.build_opener(proxy)
-        # urllib2.install_opener(opener)
-        response = urllib2.urlopen(request_url)
-        return response
-
     # 获取列表界面的内容
     def get_page_code(self, page_num):
 
-        # request = urllib2.Request(self.url+str(page_num))
+        request = urllib2.Request(self.url+str(page_num))
 
-        # response = urllib2.urlopen(request)
-        response = self.set_proxy(self.url+str(page_num))
+        response = urllib2.urlopen(request)
+
         page_code = response.read().decode('gbk')
 
         # print page_code
 
         return page_code
+
     # 处理列表界面的内容
     def get_contents(self, page_num):
 
@@ -65,7 +70,51 @@ class TaoBaoMM:
 
     # 获取MM个人详情界面
     def get_detail_page(self, info_url):
-        response = self.set_proxy(info_url)
+        """
+        获取MM个人详情界面
+        这里需要登录
+        :param info_url:
+        :return:
+        """
+        # url
+        login_url = 'https://login.taobao.com/member/login.jhtml'
+        request = urllib2.Request(login_url)
+        response = urllib2.urlopen(request)
+        page_code = response.read().decode('gbk')
+
+
+
+        #
+        # target_url = info_url
+        #
+        # session_requests = requests.session()
+        # result = session_requests.get(login_url)
+        # page_code
+        # user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6)'
+        #
+        # headers = {'User_Agent': user_agent}
+        # values = {
+        #     "TPL_username": "ashimar_珠",
+        # }
+        # data = urllib.urlencode(values)
+        # request = urllib2.Request(login_url, data, headers)
+        # response = urllib2.urlopen(request)
+        # page_code = response.read().decode('gbk')
+        # pattern = re.compile('<input type="hidden" name="um_token" value="(.*?)">', re.S)
+        # items = re.findall(pattern, page_code)
+        #
+        # um_token = items
+        # payload = {
+        #     "TPL_username": "ashimar_珠",
+        #     "TPL_password": "zhz12123123412",
+        #     "um_token": um_token,
+        #
+        # }
+        # session_requests = requests.session()
+        # result = session_requests.post(login_url, data=payload, headers=dict(referer=login_url))
+        #
+        # response = session_requests.get(target_url, headers=dict(referer=target_url))
+
         return response.read().decode('gbk')
 
     # 获取个人文字简介
