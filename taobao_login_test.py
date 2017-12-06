@@ -1,42 +1,37 @@
-
 # coding:utf-8
-"""
-import requests
-from lxml import etree
-
-url = 'https://www.zhihu.com/'
-
-get_token = requests.get(url,)
-print get_token.text
-html = etree.HTML(get_token.text)
-token = html.xpath('//input[@name="_xsrf"]/@value')
-payload = {
-    'account': '15220874104',
-    'password': 'zhihuZHZ',
-    '_xsrf': token,
-}
-
-r = requests.post(url, params=payload)
-"""
 
 import urllib, urllib2, cookielib, time
+import requests
 
 # post提交地址，用chrome浏览器的开发者工具监控得到
-
-# loginurl = 'http://www.zhihu.com/login/phone_num'
+#  方法一： 使用 requests 实现
 loginurl = 'https://login.taobao.com/member/login.jhtml'
-# mysite = 'https://www.zhihu.com/inbox'
 mysite = 'https://i.taobao.com/my_taobao.htm?spm=a1z08.2.1997525045.1.1cbcff19ekOAhi&nekot=YXNoaW1hcl/W6Q==1512061257202'
-formdata = '''xsrf:83800e8b9d801e5b770e5ad3b528ef8e
-password:zhihuZHZ
-phone_num:15220874104
+
+data = {
+    "TPL_username": "996606326@qq.com",
+    "TPL_password": "zhz12123123412",
+    "J_NcoToken": 'ed90a2b6485fd1608e53ea96dbcb6c63a484a76e',
+
+}
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',
+}
+# 请求登录接口
+r = requests.post(loginurl, params=data,  headers=headers)
+print r.status_code
+
+# 将CookieJar转为字典：
+cookies = requests.utils.dict_from_cookiejar(r.cookies)
+# 请求我的淘宝界面
+r = requests.get(mysite, cookies=cookies, headers=headers )
+print r.text
+
+#  方法二： 使用 urllib2 库实现
 '''
-# data = dict([x.split(':') for x in formdata.split('\n')])
-# data = {
-#     '_xsrf': '704b1cbf4531c944c5428954e868e7dc',
-#     'password': 'zhihuZHZ',
-#     'phone_num': '15220874104',
-# }
+loginurl = 'https://login.taobao.com/member/login.jhtml'
+mysite = 'https://i.taobao.com/my_taobao.htm?spm=a1z08.2.1997525045.1.1cbcff19ekOAhi&nekot=YXNoaW1hcl/W6Q==1512061257202'
+
 data = {
     "TPL_username": "996606326@qq.com",
     "TPL_password": "zhz12123123412",
@@ -44,6 +39,7 @@ data = {
 
 }
 data = urllib.urlencode(data)
+
 # 实例化一个cookies保存器
 cj = cookielib.CookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
@@ -64,3 +60,6 @@ print result
 f = open('taobao.html','w')
 f.writelines(result)
 f.close()
+
+'''
+

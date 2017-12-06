@@ -1,99 +1,54 @@
 # coding:utf-8
 
-# from pyquery import PyQuery as pq
-from lxml import etree
-import urllib2, re, urllib
-import requests
-import cookielib
-url = 'http://www.zcf8.com/login'
-
-cookie = cookielib.CookieJar()
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
-opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36')]
-r = opener.open(url)
-page_code = r.read().decode('utf-8')
-print page_code
-print cookie
-
-pattern = re.compile('<div class="tu-yz posr">.*?<img src="(.*?)"', re.S)
-items = re.findall(pattern, page_code)
-print items
-# ----- 获取验证码: 先把验证码保存到本地，然后输入验证码进行操作
-# 验证码的处理#
-# 验证码生成页面的地址#
-im_url = items[0]
-#读取验证码图片#
-im_data = urllib2.urlopen(im_url).read()
-# 打开一个Code.PNG文件在D盘，没有的话自动生成#
-f=open('code.png','wb')
-# 写入图片内容#
-f.write(im_data)
-# 关闭文件#
-f.close()
-
-imgCode = raw_input('输入验证码：')
-
-payload = {
-    "phone_num": '15220874104',
-    'password': '1234567',
-    'imgcode': imgCode,
-    'login_mode':'1',
-    "_token":'nRgEpV3A4lQCD7Pb61ClxXiixsgvBjZZSAUb9vQw',
-}
-data = urllib.urlencode(payload)
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
-r = opener.open(url, data)
-print r.read().decode('utf-8')
+import requests, urllib2, re
 
 
+def get_imgCode(img_url):
+    # 验证码的处理#
+    # 验证码生成页面的地址#
+    im_url = img_url
+    # 读取验证码图片#
+    im_data = urllib2.urlopen(im_url).read()
+    # 打开一个Code.PNG文件在D盘，没有的话自动生成#
+    f = open('Code.png', 'wb')
+    # 写入图片内容#
+    f.write(im_data)
+    # 关闭文件#
+    f.close()
 
+def login_factoryhelper():
+    # post提交地址，用chrome浏览器的开发者工具监控得到
+    #  方法一： 使用 requests 实现
+    loginurl = 'http://www.zcf8.com/login'
+    mysite = 'https://i.taobao.com/my_taobao.htm?spm=a1z08.2.1997525045.1.1cbcff19ekOAhi&nekot=YXNoaW1hcl/W6Q==1512061257202'
 
-'''
-request = urllib2.Request(url)
-response = urllib2.urlopen(request)
-page_code = response.read().decode('utf8')
-pattern = re.compile('<div class="tu-yz posr">.*?<img src="(.*?)"', re.S)
-items = re.findall(pattern, page_code)
-print items
-# ----- 获取验证码: 先把验证码保存到本地，然后输入验证码进行操作
-# 验证码的处理#
-# 验证码生成页面的地址#
-im_url = items[0]
-#读取验证码图片#
-im_data = urllib2.urlopen(im_url).read()
-# 打开一个Code.PNG文件在D盘，没有的话自动生成#
-f=open('code.png','wb')
-# 写入图片内容#
-f.write(im_data)
-# 关闭文件#
-f.close()
+    img_response = requests.get(loginurl)
+    contents = img_response.text
+    img_pattern = re.compile('<div class="tu-yz posr">.*?<img src="(.*?)"', re.S)
+    img_msg = re.findall(img_pattern, contents)
+    img_url = img_msg[0]
+    get_imgCode(img_url)
+    img_code = raw_input(u'请输入验证码：')
 
-imgCode = raw_input('输入验证码：')
+    data = {
+        "phone_num": "15220874104",
+        "password": u"1234567",
+        "imgcode": img_code,
+    }
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',
+    }
+    cookies = {
+    'Cookie':'BAIDUID=8B6FD303B57ABD2673F20AAB6C0010F9:FG=1; BIDUPSID=8B6FD303B57ABD2673F20AAB6C0010F9; PSTM=1487129579; HMACCOUNT=39703B97453094B8; MCITY=-119%3A; BDUSS=k1UNjJXTk1PZHVQWUlyYk9mMDZkR3A4cGlpV1h6RlhpNkJsVXdTSlJkRXBTZ3hhTVFBQUFBJCQAAAAAAAAAAAEAAACq139y0N7T8dGpAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACm95FkpveRZe; BDRCVFR[S4-dAuiWMmn]=I67x6TjHwwYf0; PSINO=6; H_PS_PSSID=1439_24886_18194_21091_17001_20691_25178_22158; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598'
+    }
+    # 请求登录接口
+    r = requests.options(loginurl, params=data, headers=headers, cookies=cookies)
+    print r.status_code
 
-payload = {
-    "phone_num": '15220874104',
-    'password': '1234567',
-    'imgcode': imgCode,
-    'login_mode':'1'
-}
-headers = {
-    'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-    'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'zh-CN,zh;q=0.8',
-    'Connection': 'keep-alive',
-    'Cookie': 'telhao=; keys=; PHPSESSID=90c4764e985d605c8861d6197c513acc; XSRF-TOKEN=eyJpdiI6IlV6TkkxN2drZGtUam9sZDhLd0pWbWc9PSIsInZhbHVlIjoiQjNkM0JqU3QwWEFFTzlxNWg0endKdElJdnlMZTcxaDJLZGc3VmNLeUFPNG9UZ3A3WGlYcThYWHNXbEVxN1B3VlFBV3hraWY0czF2bEk3XC9VM2pcL0pDQT09IiwibWFjIjoiZTIzOWQ5OWQ0Mjk5ZTIwMGVmYjEwMzgzNTgyZTFkZTlkNWE5YTRiMmQwMzdlZTAwMTI1NzQyZjZhNzhkODEzMiJ9; laravel_session=eyJpdiI6InZIajVOWEkrbjRsQUdCNDRIZmhjN3c9PSIsInZhbHVlIjoiNGR4c1NYS3RkaVhTRVY3NFdWR3J5TVJHSVdZRnZcLzBDa20rdmRwandURlBHaFNBNHpXang4TkRHakQzZUxpUnpsT2VPZXJoWEFTdUxqQlFnZGtTUE5BPT0iLCJtYWMiOiI1ZmQwMTQwMGY0MDVkMTNkODgyMzQwOTZiNDQ4NzYyZTg1NTZjOThlMDJjMTgyNjFlZmExZTg1MTk2MDVmMDc5In0%3D; Hm_lvt_3baf884227b4c5050c4d14b747ed52ba=1511745764,1511834840,1512013051,1512032796; Hm_lpvt_3baf884227b4c5050c4d14b747ed52ba=1512032809',
-    'Host': 'www.zcf8.com',
-    'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
+    # 将CookieJar转为字典：
+    # cookies = requests.utils.dict_from_cookiejar(r.cookies)
+    # # 请求我的淘宝界面
+    # r = requests.get(mysite, cookies=cookies, headers=headers )
+    print r.text
 
-    # 'X-XSRF-TOKEN': ,
-}
-
-r = requests.post(url, params=payload, headers=headers)
-print r.status_code
-print r.headers['content-type']
-print r.encoding
-print r.text
-
-# print response.statecode
-'''
+login_factoryhelper()
